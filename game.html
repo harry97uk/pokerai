@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Poker Game</title>
+    <style>
+        /* CSS styles for the poker game */
+        /* You can modify these styles to achieve the desired look and feel */
+
+        /* Table */
+        .table {
+            background-color: green;
+            border-radius: 10px;
+            width: 600px;
+            height: 400px;
+            margin: 50px auto;
+            position: relative;
+        }
+
+        /* Dealer button */
+        .dealer-button {
+            background-color: red;
+            border: 2px solid black;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+        }
+
+        .dealer-button:hover {
+            cursor: pointer;
+            background-color: lightcoral;
+        }
+
+        /* Player areas */
+        .player-area {
+            background-color: black;
+            border-radius: 10px;
+            width: 200px;
+            height: 100px;
+            position: absolute;
+        }
+
+        .player-chips {
+            /* margin: auto; */
+            border-radius: 10px;
+            right: 30px;
+            top: 50px;
+            position: absolute;
+        }
+
+        /* Player 1 */
+        .player-1 {
+            top: 50px;
+            left: 50px;
+        }
+
+        /* Player 2 */
+        .player-2 {
+            top: 50px;
+            right: 50px;
+        }
+
+        /* Player Options */
+        .player-options {
+            width: 200px;
+            height: 300px;
+            border-width: 5mm;
+            border-style: inset;
+            border-color: black;
+            position: absolute;
+        }
+
+        .options {
+            margin: 20px auto;
+            width: 150px;
+            height: 40px;
+            border-width: 1mm;
+            border-style: solid;
+            border-color: black;
+            text-align: center;
+            
+        }
+        .options:hover {
+            cursor: pointer;
+            background-color: aliceblue;
+        }
+
+        /* Community cards */
+        .community-cards {
+            background-color: blue;
+            border-radius: 10px;
+            width: 400px;
+            height: 100px;
+            position: absolute;
+            top: 200px;
+            left: 100px;
+        }
+
+        /* Pot */
+        .pot {
+            background-color: yellow;
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+        }
+
+        /* Card */
+        .card {
+            width: 50px;
+            height: 70px;
+            margin-left: 10px;
+            margin-right: 10px;
+            margin-top: 10px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+            background-position: center;
+            background-size: cover;
+            display: inline-block;
+        }
+    </style>
+    <script src="pokergame.js"></script>
+    <script src="cards.js"></script>
+    <script src="rank-hands.js"></script>
+</head>
+
+<body>
+    <div class="player-options">
+        <div class="options">Check</div>
+        <div class="options">Bet</div>
+        <div class="options">Fold</div>
+    </div>
+
+    <div class="table">
+        <div class="dealer-button" onclick="nextPlay()"></div>
+        <div class="player-area player-1">
+            <div class="player-chips" style="color: white;">100</div>
+        </div>
+        <div class="player-area player-2">
+            <div class="player-chips" style="color: white;">100</div>
+        </div>
+        <div class="community-cards">
+            <script>
+                const communityCards = new Cards(['UK', 'UK', 'UK', 'UK', 'UK']);
+                communityCards.renderCommunityCardsFirst();
+            </script>
+        </div>
+        <div class="pot"></div>
+    </div>
+    <div class="information">
+        <div class="hand-information"></div>
+    </div>
+</body>
+
+</html>
