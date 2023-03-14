@@ -22,7 +22,7 @@ function getCombinations(cards, k) {
     const combinations = getCombinations(cards, 5);
   
     // evaluate each 5-card combination and determine the best hand
-    let bestRank = '';
+    let bestRank = 0;
     for (let i = 0; i < combinations.length; i++) {
       const rank = evaluateFiveCardHand(combinations[i]);
       if (rank >= bestRank) {
@@ -121,23 +121,23 @@ function getCombinations(cards, k) {
   
     // determine hand rank
     if (royalFlush[0]) {
-      return 117;
+      return 126;
     } else if (straightFlush[0]) {
-      return 104 + straightFlush[1];
+      return 112 + straightFlush[1];
     } else if (fourOfAKind[0]) {
-      return 91 + fourOfAKind[1] + (fourOfAKind[2]/10);
+      return 98 + fourOfAKind[1] + (fourOfAKind[2]/10);
     } else if (fullHouse[0]) {
-      return 78 + fullHouse[1];
+      return 84 + fullHouse[1];
     } else if (flush[0]) {
-      return 65 + flush[1];
+      return 70 + flush[1];
     } else if (straight[0]) {
-      return 52 + straight[1];
+      return 56 + straight[1];
     } else if (threeOfAKind[0]) {
-      return 39 + threeOfAKind[1] + (threeOfAKind[2]/10);
+      return 42 + threeOfAKind[1] + (threeOfAKind[2]/10);
     } else if (twoPair[0]) {
-      return 26 + twoPair[1];
+      return 28 + twoPair[1];
     } else if (onePair[0]) {
-      return 13 + onePair[1] + (onePair[2]/10);
+      return 14 + onePair[1] + (onePair[2]/10);
     } else {
       let highCardAndKicker = 0
       let unit = 1

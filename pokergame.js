@@ -2,29 +2,44 @@
 let deck = [];
 const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
 const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'jack', 'queen', 'king', 'ace'];
-const ranks = ['High Card', 'One Pair', 'Two Pair', 'Three of a Kind', 'Straight', 'Flush', 'Full House', 'Four of a Kind', 'Straight Flush', 'Royal Flush']
+const ranks = ['High Card', 'One Pair', 'Two Pair', 'Three of a Kind', 'Straight', 'Flush', 'Full House', 'Four of a Kind', 'Straight Flush', 'Royal Flush', '']
 
-for (let i = 0; i < suits.length; i++) {
-  for (let j = 0; j < values.length; j++) {
-    deck.push({ value: values[j], suit: suits[i] });
+function resetAndShuffleDeck() {
+  for (let i = 0; i < suits.length; i++) {
+    for (let j = 0; j < values.length; j++) {
+      deck.push({ value: values[j], suit: suits[i] });
+    }
+  }
+
+  // shuffle the deck
+  function shuffle(cards) {
+    for (let i = cards.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [cards[i], cards[j]] = [cards[j], cards[i]];
+    }
+  }
+
+  for (let n = 0; n < 3; n++) {
+    shuffle(deck)
   }
 }
 
-// shuffle the deck
-function shuffle(cards) {
-  for (let i = cards.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [cards[i], cards[j]] = [cards[j], cards[i]];
-  }
-}
+resetAndShuffleDeck()
 
-shuffle(deck)
 
 // initialize players
-const player1 = { name: 'Player 1', hand: [], chips: 100 };
-const player2 = { name: 'Player 2', hand: [], chips: 100 };
+const player1 = { name: 'Player 1', hand: [], chips: 100, currentBet: 0, inHand: false };
+const player2 = { name: 'Player 2', hand: [], chips: 100, currentBet: 0, inHand: false };
+const player2ai = new PokerAI(player2.chips);
 const players = [player1, player2];
+
 let dealer = 0; // index of the dealer
+let currentStartingPlayer = players.length-1
+let currentPlayer = 0; //who's go it is
+
+let inRound = false
+let endRound = false
+let pot = 0
 
 let dealt = false
 let hasFlop = false
@@ -32,12 +47,83 @@ let hasTurn = false
 let hasRiver = false
 let cCards = []
 
+function determineStartingPlayer() {
+  if (currentStartingPlayer == players.length-1) {
+    currentStartingPlayer = 0
+  } else {
+    currentStartingPlayer++
+  }
+}
+
+function startRound() {
+  if (!inRound && !endRound) {
+    nextPlay()
+    determineStartingPlayer()
+    currentPlayer = currentStartingPlayer
+    startTurn(currentPlayer)
+    inRound = true
+  } else if (endRound) {
+    console.log("endround");
+    updatePot(0, true)
+    removeAllCards()
+    resetAndShuffleDeck()
+    for (let i = 0; i < players.length; i++) {
+      players[i].hand = []
+    }
+    const newCommunityCards = new Cards(['UK', 'UK', 'UK', 'UK', 'UK']);
+    newCommunityCards.renderCommunityCardsFirst();
+    endRound = false
+    updateDealerText("Deal")
+  }
+}
+
+function startTurn(playerIndex) {
+  currentPlayer = playerIndex;
+  enablePlayerActions(currentPlayer); // Enable this player's action buttons
+}
+
+// Function to end a player's turn and move on to the next player
+function endTurn() {
+  disablePlayerActions(currentPlayer); // Disable this player's action buttons
+  let playerCounter = 0
+  for (let i = 0; i < players.length; i++) {
+    if (players[i].inHand) {
+      playerCounter++
+    }
+  }
+  if (playerCounter < 2) {
+    determineWinner(false)
+    dealt = false
+    hasFlop = false
+    hasTurn = false
+    hasRiver = false
+    inRound = false
+    endRound = true
+    updateDealerText('Next Round')
+  } else {
+    currentPlayer = (currentPlayer + 1) % players.length; // Move on to the next player
+    if (currentPlayer == 0) {
+      if (players[currentPlayer].currentBet >= currentMinimumBet) {
+        for (let i = 0; i < players.length; i++) {
+          players[i].currentBet = 0
+        }
+        nextPlay()
+      }
+    }
+    if (!endRound) {
+      startTurn(currentPlayer); // Start the next player's turn
+    }
+  }
+}
 
 // deal two cards to each player
 function nextPlay() {
+  currentMinimumBet = 0
   if (!dealt) {
+    updateMoveInfo(null, null, true)
     deal()
     dealt = true
+    updateDealerText('')
   } else if (!hasFlop) {
     dealFlop()
     hasFlop = true
@@ -49,6 +135,14 @@ function nextPlay() {
     hasRiver = true
   } else {
     determineWinner()
+    showOtherPlayerHands()
+    dealt = false
+    hasFlop = false
+    hasTurn = false
+    hasRiver = false
+    inRound = false
+    endRound = true
+    updateDealerText('Next Round')
   }
 
 }
@@ -57,6 +151,7 @@ function deal() {
   for (let i = 0; i < players.length; i++) {
     players[i].hand.push(deck.pop());
     players[i].hand.push(deck.pop());
+    players[i].inHand = true
   }
   getPlayer1Hand()
   getOtherPlayerHands()
@@ -141,32 +236,89 @@ function dealRiver() {
 
 
 // determine the winner
-function determineWinner() {
-  showOtherPlayerHands()
+function determineWinner(showdown = true) {
   let bestHand = null;
   let winner = null;
+  let winnerNum = null
   let winningRank = null;
   for (let i = 0; i < players.length; i++) {
+    disablePlayerActions(i)
     const hand = players[i].hand
     console.log(hand);
-    const rank = evaluateHand(hand);
-    console.log(ranks[Math.floor(rank / 13)]);
+    let rank = -1
+    if (players[i].inHand) {
+      if (!showdown) {
+        rank = 140
+      } else {
+        rank = evaluateHand(hand);
+      }
+    }
+    console.log(players[i], rank, "rank score");
+    console.log(ranks[Math.floor(rank / 14)]);
     if (bestHand === null || rank > bestHand) {
       bestHand = rank;
       winner = players[i];
-      winningRank = ranks[Math.floor(rank / 13)];
+      winnerNum = i
+      winningRank = ranks[Math.floor(rank / 14)];
     } else if (rank === bestHand) {
       // handle ties
       winner = null;
     }
   }
+  if (winner !== null) {
+    updateChips(pot, winnerNum)
+  } else {
+    for (let i = 0; i < players.length; i++) {
+      updateChips(pot / players.length, i)
+    }
+  }
+  displayWinner(winner, winningRank, showdown)
+}
+
+function updateChips(amount, playerNum) {
+  players[playerNum].chips += amount
+  let chipAmount = document.getElementById(`player${playerNum + 1}-chips`)
+  console.log(chipAmount);
+  chipAmount.innerText = String(players[playerNum].chips)
+}
+
+function updatePot(amount, reset = false) {
+  console.log("pot: ", pot);
+  if (reset) {
+    pot = 0
+    updatePotText(0)
+  } else {
+    pot += amount
+    updatePotText(pot)
+  }
+}
+
+function updateDealerText(text) {
+  let dealertext = document.getElementById('dealerText')
+  dealertext.innerText = text
+}
+
+function updatePotText(value) {
+  let dealertext = document.getElementById('potDisplay')
+  dealertext.innerText = "Pot: " + value
+}
+
+function displayWinner(winner, winningRank, showdown) {
   const handInformation = document.querySelector(".hand-information")
-  let winnerText = 'The winner is: ' + (winner !== null ? winner.name + ` with ${winningRank}` : 'Tie')
-  let wtx = document.createElement('h1')
+  let winnerText
+  if (showdown) {
+    winnerText = 'The winner is: ' + (winner !== null ? winner.name + ` with ${winningRank}` : 'Tie')
+  } else {
+    winnerText = 'The winner is: ' + winner.name
+  }
+
+  let wtx
+  if (document.getElementById("winnerMessage") === null) {
+    wtx = document.createElement('h1')
+    wtx.id = "winnerMessage"
+  } else {
+    wtx = document.getElementById("winnerMessage")
+  }
   wtx.innerText = winnerText
   handInformation.append(wtx)
 }
-
-
-
-

@@ -104,3 +104,23 @@ class Cards {
         });
     }
 }
+
+function removeAllCards() {
+    console.log("removing");
+    const communityCards = document.querySelector(".community-cards")
+    const playerCards = []
+    for (let i = 0; i < players.length; i++) {
+        let player = document.querySelector(`div.player-area.player-${i+1}`) 
+        playerCards.push(player)           
+    }
+    for (let n = 0; n < 5; n++) {
+        console.log(communityCards);
+        communityCards.removeChild(document.getElementById(`communityCard${n}`))
+        if (n < 2) {
+            for (let j = 0; j < playerCards.length; j++) {
+                playerCards[j].removeChild(document.getElementById(`player${j+1}Card${n}`))                    
+            }
+        }
+    }
+    
+}
