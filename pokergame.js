@@ -28,13 +28,14 @@ resetAndShuffleDeck()
 
 
 // initialize players
-const player1 = { name: 'Player 1', hand: [], chips: 100, currentBet: 0, inHand: false };
-const player2 = { name: 'Player 2', hand: [], chips: 100, currentBet: 0, inHand: false };
+const startingChips = 100
+const player1 = { name: 'Player 1', hand: [], chips: startingChips, currentBet: 0, inHand: false, matchedBet: false };
+const player2 = { name: 'Player 2', hand: [], chips: startingChips, currentBet: 0, inHand: false, matchedBet: false };
 const player2ai = new PokerAI(player2.chips);
 const players = [player1, player2];
 
 let dealer = 0; // index of the dealer
-let currentStartingPlayer = players.length-1
+let currentStartingPlayer = players.length - 1
 let currentPlayer = 0; //who's go it is
 
 let inRound = false
@@ -48,7 +49,7 @@ let hasRiver = false
 let cCards = []
 
 function determineStartingPlayer() {
-  if (currentStartingPlayer == players.length-1) {
+  if (currentStartingPlayer == players.length - 1) {
     currentStartingPlayer = 0
   } else {
     currentStartingPlayer++
@@ -69,9 +70,18 @@ function startRound() {
     resetAndShuffleDeck()
     for (let i = 0; i < players.length; i++) {
       players[i].hand = []
+      players[i].matchedBet = false
+      players[i].inHand = false
+      players[i].currentBet = 0
+      currentMinimumBet = 0
     }
     const newCommunityCards = new Cards(['UK', 'UK', 'UK', 'UK', 'UK']);
     newCommunityCards.renderCommunityCardsFirst();
+    if (players.some(p => p.chips == startingChips*players.length)) {
+      alert(`Player Wins`)
+      endGame = true
+      restartGame()
+    } 
     endRound = false
     updateDealerText("Deal")
   }
@@ -102,19 +112,20 @@ function endTurn() {
     updateDealerText('Next Round')
   } else {
     currentPlayer = (currentPlayer + 1) % players.length; // Move on to the next player
-    if (currentPlayer == 0) {
-      if (players[currentPlayer].currentBet >= currentMinimumBet) {
-        for (let i = 0; i < players.length; i++) {
-          players[i].currentBet = 0
-        }
-        nextPlay()
+    if (players.every(p => p.matchedBet || !p.inHand)) {
+      for (let i = 0; i < players.length; i++) {
+        players[i].currentBet = 0
+        players[i].matchedBet = false
       }
-    }
-    if (!endRound) {
-      startTurn(currentPlayer); // Start the next player's turn
+      nextPlay()
+      currentPlayer = currentStartingPlayer
     }
   }
+  if (!endRound) {
+    startTurn(currentPlayer); // Start the next player's turn
+  }
 }
+
 
 // deal two cards to each player
 function nextPlay() {

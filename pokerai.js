@@ -36,14 +36,24 @@ class PokerAI {
 
         // if the AI has a good hand, bet aggressively
         if (handStrength >= 52) {
-            this.strategy.bet = Math.floor(gameState.players[0].stack / 2);
+            let bet = Math.floor(players[playerNum].chips / 2);
+            if (bet <= currentBet) {
+                this.strategy.call = true
+            } else {
+                this.strategy.bet = bet - currentBet
+            }
         }
         // if the AI has a mediocre hand, bet conservatively
         else if (handStrength >= 13) {
-            this.strategy.bet = Math.floor(gameState.players[0].stack / 4);
+            let bet = Math.floor(players[playerNum].chips / 4);
+            if (bet <= currentBet) {
+                this.strategy.fold = true
+            } else {
+                this.strategy.bet = bet - currentBet
+            }
         }
         // check
-        else if (handStrength >= 5) {
+        else if (handStrength >= 5 && currentBet == 0) {
             console.log("check");
         } 
         // otherwise, fold
@@ -71,6 +81,9 @@ function makeDecision(playerNum) {
         console.log("ai bluff");
         makeBet(playerNum, this.strategy.bet);
     } else if (this.strategy.bet) {
+        console.log("ai bet");
+        makeBet(playerNum, this.strategy.bet);
+    } else if (this.strategy.call) {
         console.log("ai bet");
         makeBet(playerNum, this.strategy.bet);
     } else {
