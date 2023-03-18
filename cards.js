@@ -109,7 +109,7 @@ function removeAllCards() {
     console.log("removing");
     const communityCards = document.querySelector(".community-cards")
     const playerCards = []
-    for (let i = 0; i < players.length; i++) {
+    for (let i = 0; i < hplayers.length; i++) {
         let player = document.querySelector(`div.player-area.player-${i+1}`) 
         playerCards.push(player)           
     }

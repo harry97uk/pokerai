@@ -133,7 +133,7 @@
         }
 
         .pot-display {
-            top: 10px;
+            top: 0px;
             padding: 10%;
             text-align: center;
             position: relative;
@@ -159,6 +159,7 @@
     <script src="cards.js"></script>
     <script src="rank-hands.js"></script>
     <script src="decisions.js"></script>
+    <script src="main.js"></script>
 </head>
 
 <body>
@@ -178,7 +179,7 @@
     </div>
 
     <div class="table">
-        <div class="dealer-button" onclick="startRound()">
+        <div class="dealer-button" onclick="startGame()">
             <div class="dealer-text">
                 <p id="dealerText">Deal</p>
             </div>
@@ -197,6 +198,7 @@
         </div>
         <div class="pot">
             <div class="pot-display">
+                <p id="currentBet">Current Bet: 0</p>
                 <p id="potDisplay">Pot: 0</p>
             </div>
         </div>

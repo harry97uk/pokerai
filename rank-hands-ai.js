@@ -36,7 +36,7 @@ function getCombinations(cards, k) {
   // evaluate the hand
   function evaluateFiveCardHand(cards) {
     // sort cards by rank (2 = 0, 3 = 1, ..., A = 12)
-    const ranks = cards.map(card => hvalues.indexOf(card.value)).sort((a, b) => a - b);
+    const ranks = cards.map(card => values.indexOf(card.value)).sort((a, b) => a - b);
   
     // check for flush
     const suits = cards.map(card => card.suit);
@@ -151,7 +151,7 @@ function getCombinations(cards, k) {
 
   function evaluateTwoCardHand(cards) {
     // sort cards by rank (2 = 0, 3 = 1, ..., A = 12)
-    const ranks = cards.map(card => hvalues.indexOf(card.value)).sort((a, b) => a - b);
+    const ranks = cards.map(card => values.indexOf(card.value)).sort((a, b) => a - b);
   
     // check for flush
     const suits = cards.map(card => card.suit);
